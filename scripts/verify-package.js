@@ -79,10 +79,10 @@ async function verifyPackage() {
   // 2. Check build files
   log('\n🏗️  2. Build Output', 'bold');
   const buildChecks = [
-    ['build/server.js', 'Main server file'],
-    ['build/index.js', 'Index file'],
-    ['build/services/n8nApi.js', 'N8N API service'],
-    ['build/types/workflow.js', 'Workflow types'],
+    ['build/server.cjs', 'Main server file'],
+    ['build/index.cjs', 'Index file'],
+    ['build/services/n8nApi.cjs', 'N8N API service'],
+    ['build/types/workflow.cjs', 'Workflow types'],
     ['README.md', 'README file'],
     ['LICENSE', 'License file']
   ];
@@ -120,7 +120,7 @@ async function verifyPackage() {
   // 5. Test main entry point
   log('\n🚀 5. Entry Point Verification', 'bold');
   try {
-    const mainFile = require(path.resolve('build/server.js'));
+    const mainFile = require(path.resolve('build/server.cjs'));
     log('✅ Main entry point loads successfully', 'green');
   } catch (error) {
     log(`❌ Main entry point error: ${error.message}`, 'red');
