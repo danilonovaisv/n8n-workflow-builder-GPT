@@ -1,0 +1,14 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: always
+    environment:
+      - WEBHOOK_URL=https://n8n-oxfvcnwk.sg-members-1.clawcloudrun.com
+      - N8N_HOST=https://n8n-oxfvcnwk.sg-members-1.clawcloudrun.com
+      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDkxODc4OS0yNzhjLTQ3YjctOGQ3MC0zNDRiMjgyMTU2ZGIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU5NzE5NzQyfQ.8b1E3O1y782Ox0r9eUlVbtoyhnETZ8qXnm4rd9XbBKA
+      - GITHUB_OWNER=danilonovaisv
+      - GITHUB_REPO=n8n-workflow-builder-GPT
+      - GITHUB_BRANCH=main
+      - GITHUB_TOKEN=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
+    ports:
+      - "5678:5678"
