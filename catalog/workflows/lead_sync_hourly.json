@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "id": "lead_sync_hourly",
+    "version": "1.0.0",
+    "description": "Fetch leads, append to Google Sheet, post Slack if threshold is reached."
+  },
+  "workflow": {
+    "name": "Lead Sync Hourly ({{sheet_id}})",
+    "tags": ["agent", "autogen"],
+    "nodes": [
+      {
+        "id": "t",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [240, 300],
+        "parameters": {
+          "interval": [
+            { "field": "unit", "value": "minutes" },
+            { "field": "value", "value": "{{interval_minutes|default(60)}}" }
+          ]
+        }
+      },
+      {
+        "id": "fetch",
+        "name": "HTTP Request",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [520, 300],
+        "parameters": { "method": "GET", "url": "{{source_url}}" }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [[{ "node": "HTTP Request", "type": "main", "index": 0 }]]
+      }
+    }
+  }
+}

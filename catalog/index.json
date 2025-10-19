@@ -1,0 +1,16 @@
+{
+  "lead_sync_hourly": {
+    "name": "Lead Sync Hourly",
+    "path": "catalog/workflows/lead_sync_hourly.json",
+    "required_credentials": ["SHEETS_CRED"],
+    "param_schema": {
+      "type": "object",
+      "properties": {
+        "source_url": { "type": "string" },
+        "sheet_id": { "type": "string" },
+        "interval_minutes": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["source_url", "sheet_id"]
+    }
+  }
+}
