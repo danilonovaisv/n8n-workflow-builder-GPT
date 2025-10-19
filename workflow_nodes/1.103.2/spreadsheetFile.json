@@ -1,0 +1,22 @@
+{
+  "nodeType": "n8n-nodes-base.spreadsheetFile",
+  "displayName": "SpreadsheetFile",
+  "description": null,
+  "version": "2",
+  "properties": [],
+  "credentialsConfig": [],
+  "io": {
+    "inputs": [],
+    "outputs": [],
+    "outputNames": [],
+    "hints": {}
+  },
+  "wiring": {
+    "role": "generic",
+    "requires": [],
+    "optional": [],
+    "consumedBy": [],
+    "consumes": [],
+    "produces": []
+  }
+}

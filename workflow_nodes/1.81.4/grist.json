@@ -1,0 +1,27 @@
+{
+  "nodeType": "n8n-nodes-base.grist",
+  "displayName": "Grist",
+  "description": "Consume the Grist API",
+  "version": 1,
+  "properties": [],
+  "credentialsConfig": [
+    {
+      "name": "gristApi",
+      "required": true
+    }
+  ],
+  "io": {
+    "inputs": [],
+    "outputs": [],
+    "outputNames": [],
+    "hints": {}
+  },
+  "wiring": {
+    "role": "generic",
+    "requires": [],
+    "optional": [],
+    "consumedBy": [],
+    "consumes": [],
+    "produces": []
+  }
+}
