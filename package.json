@@ -63,6 +63,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",
+    "@openai/chatkit-react": "^1.1.1",
     "axios": "^1.11.0",
     "zod": "^3.23.8"
   },

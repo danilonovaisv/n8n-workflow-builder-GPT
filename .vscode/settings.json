@@ -1,8 +1,9 @@
 {
-    "cSpell.words": [
-        "ECONNREFUSED",
-        "makafeli",
-        "modelcontextprotocol",
-        "nodenext"
-    ]
+  "cSpell.words": [
+    "ECONNREFUSED",
+    "makafeli",
+    "modelcontextprotocol",
+    "nodenext"
+  ],
+  "commentTranslate.hover.enabled": true
 }

@@ -315,6 +315,14 @@ export class MCPTestClient {
   async callTool(name: string, args: any = {}) {
     // Mock tool call responses based on tool name and arguments
     try {
+      const formatError = (error: unknown) => ({
+        content: [{
+          type: 'text',
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`
+        }],
+        isError: true
+      });
+
       switch (name) {
         case 'list_workflows':
           // Try to make axios call to simulate real behavior
@@ -646,16 +654,27 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Workflow ${args.id} executed successfully`,
-              execution: { id: 'new-execution-id', workflowId: args.id, status: 'running' }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.post(`/api/v1/workflows/${args.id}/execute`);
+          const execution = response?.data ?? {
+            id: 'new-execution-id',
+            workflowId: args.id,
+            status: 'running',
+            startedAt: new Date().toISOString()
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Workflow ${args.id} executed successfully`,
+                execution
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'create_workflow_and_activate':
         if (!args.workflow) {
@@ -667,16 +686,34 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: 'Workflow created and activated successfully',
-              workflow: { id: 'new-workflow-id', name: args.workflow.name || 'New Workflow', active: true }
-            }, null, 2)
-          }]
-        };
+        try {
+          const createResponse = await axios.post('/api/v1/workflows', args.workflow);
+          const createData = createResponse?.data ?? {};
+          const workflowId = createData.id ?? args.workflow.id ?? 'new-workflow-id';
+          const activationResponse = await axios.post(`/api/v1/workflows/${workflowId}/activate`);
+          const activationData = activationResponse?.data ?? {
+            ...args.workflow,
+            id: workflowId,
+            active: true
+          };
+
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: 'Workflow created and activated successfully',
+                workflow: {
+                  ...activationData,
+                  id: activationData.id ?? workflowId,
+                  active: activationData.active ?? true
+                }
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'list_tags':
         return {
@@ -701,16 +738,27 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Tag '${args.name}' created successfully`,
-              tag: { id: 'new-tag-id', name: args.name }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.post('/api/v1/tags', { name: args.name });
+          const apiTag = response?.data ?? {};
+          const tag = {
+            id: apiTag.id ?? 'new-tag-id',
+            ...apiTag,
+            name: args.name
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Tag '${args.name}' created successfully`,
+                tag
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'get_tag':
         if (!args.id) {
@@ -722,15 +770,24 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              tag: { id: args.id, name: 'Test Tag' }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.get(`/api/v1/tags/${args.id}`);
+          const tag = response?.data ?? {
+            id: args.id,
+            name: 'Test Tag'
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                tag
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'update_tag':
         if (!args.id || !args.name) {
@@ -742,16 +799,27 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Tag ${args.id} updated successfully`,
-              tag: { id: args.id, name: args.name }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.put(`/api/v1/tags/${args.id}`, { name: args.name });
+          const apiTag = response?.data ?? {};
+          const tag = {
+            id: apiTag.id ?? args.id,
+            ...apiTag,
+            name: args.name
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Tag ${args.id} updated successfully`,
+                tag
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'delete_tag':
         if (!args.id) {
@@ -763,15 +831,22 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Tag ${args.id} deleted successfully`
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.delete(`/api/v1/tags/${args.id}`);
+          const deletedTag = response?.data ?? { success: true };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Tag ${args.id} deleted successfully`,
+                deletedTag
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'get_workflow_tags':
         if (!args.workflowId) {
@@ -783,16 +858,22 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              workflowId: args.workflowId,
-              tags: [{ id: 'tag-1', name: 'Production' }]
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.get(`/api/v1/workflows/${args.workflowId}/tags`);
+          const tags = response?.data ?? [];
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                workflowId: args.workflowId,
+                tags
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'update_workflow_tags':
         if (!args.workflowId || !args.tagIds) {
@@ -804,17 +885,25 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Tags for workflow ${args.workflowId} updated successfully`,
-              workflowId: args.workflowId,
-              assignedTags: args.tagIds
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.put(`/api/v1/workflows/${args.workflowId}/tags`, {
+            tagIds: args.tagIds
+          });
+          const assignedTags = response?.data ?? args.tagIds;
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Tags for workflow ${args.workflowId} updated successfully`,
+                workflowId: args.workflowId,
+                assignedTags
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'create_credential':
         if (!args.name || !args.type || !args.data) {
@@ -826,21 +915,32 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Credential '${args.name}' created successfully`,
-              credential: {
-                id: 'new-credential-id',
-                name: args.name,
-                type: args.type,
-                createdAt: new Date().toISOString()
-              }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.post('/api/v1/credentials', {
+            name: args.name,
+            type: args.type,
+            data: args.data
+          });
+          const apiCredential = response?.data ?? {};
+          const credential = {
+            id: apiCredential.id ?? 'new-credential-id',
+            ...apiCredential,
+            name: args.name,
+            type: args.type
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Credential '${args.name}' created successfully`,
+                credential
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'get_credential_schema':
         if (!args.credentialType) {
@@ -852,23 +952,26 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              credentialType: args.credentialType,
-              schema: {
-                type: args.credentialType,
-                displayName: 'Test Credential Type',
-                properties: {
-                  user: { displayName: 'User', type: 'string', required: true },
-                  password: { displayName: 'Password', type: 'string', required: true }
-                }
-              }
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.get(`/api/v1/credentials/schema/${args.credentialType}`);
+          const schema = response?.data ?? {
+            type: args.credentialType,
+            displayName: args.credentialType,
+            properties: {}
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                credentialType: args.credentialType,
+                schema
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'delete_credential':
         if (!args.id) {
@@ -880,38 +983,61 @@ export class MCPTestClient {
             isError: true
           };
         }
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: `Credential ${args.id} deleted successfully`
-            }, null, 2)
-          }]
-        };
+        try {
+          const response = await axios.delete(`/api/v1/credentials/${args.id}`);
+          const deletedCredential = response?.data ?? { success: true };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: `Credential ${args.id} deleted successfully`,
+                deletedCredential
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'generate_audit':
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              message: 'Security audit generated successfully',
-              audit: {
-                instance: {
-                  version: '1.0.0',
-                  nodeVersion: '18.0.0',
-                  database: 'sqlite'
-                },
-                security: {
-                  credentials: { total: 5, encrypted: 5, issues: [] },
-                  workflows: { total: 10, active: 7, abandoned: 1, issues: [] }
-                },
-                recommendations: ['Update to latest n8n version', 'Review abandoned workflows']
-              }
-            }, null, 2)
-          }]
-        };
+        try {
+          const auditPayload: Record<string, unknown> = {};
+          if (args.additionalOptions) {
+            if (args.additionalOptions.daysAbandonedWorkflow !== undefined) {
+              auditPayload.daysAbandonedWorkflow = args.additionalOptions.daysAbandonedWorkflow;
+            }
+            if (args.additionalOptions.categories) {
+              auditPayload.categories = args.additionalOptions.categories;
+            }
+          }
+
+          const response = await axios.post('/api/v1/audit', auditPayload);
+          const auditData = response?.data ?? {
+            instance: {
+              version: '1.0.0',
+              nodeVersion: '18.0.0',
+              database: 'sqlite'
+            },
+            security: {
+              credentials: { total: 0, encrypted: 0, issues: [] },
+              workflows: { total: 0, active: 0, abandoned: 0, issues: [] }
+            },
+            recommendations: []
+          };
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                message: 'Security audit generated successfully',
+                audit: auditData
+              }, null, 2)
+            }]
+          };
+        } catch (error) {
+          return formatError(error);
+        }
 
       case 'nonexistent_tool':
         return {
